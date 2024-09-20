@@ -1,1 +1,82 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSVエディター</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        input { width: 100%; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+    <h1>CSVエディター</h1>
+    <input type="file" id="fileInput" accept=".csv">
+    <button id="downloadBtn" style="display:none;">CSVとしてダウンロード</button>
+    <table id="csvTable"></table>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', handleFileSelect);
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                displayCSV(text);
+            };
+            reader.readAsText(file);
+        }
+
+        function displayCSV(data) {
+            const rows = data.split('\n');
+            const table = document.getElementById('csvTable');
+            table.innerHTML = '';
+
+            rows.forEach((row, rowIndex) => {
+                const cols = row.split(',');
+                const tr = document.createElement('tr');
+
+                cols.forEach((col, colIndex) => {
+                    const td = document.createElement(rowIndex === 0 ? 'th' : 'td');
+                    const input = document.createElement('input');
+                    input.value = col;
+                    input.addEventListener('change', () => {
+                        col = input.value;
+                    });
+                    td.appendChild(input);
+                    tr.appendChild(td);
+                });
+
+                table.appendChild(tr);
+            });
+
+            document.getElementById('downloadBtn').style.display = 'block';
+        }
+
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const table = document.getElementById('csvTable');
+            let csvContent = '';
+
+            Array.from(table.rows).forEach(row => {
+                const cols = Array.from(row.cells).map(cell => cell.firstChild.value).join(',');
+                csvContent += cols + '\n';
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'edited.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>
 
