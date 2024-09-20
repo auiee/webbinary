@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>バイナリエディタ</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        #binaryData {
+            width: 100%;
+            height: 200px;
+            font-family: monospace;
+            white-space: pre;
+            overflow: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>画像バイナリエディタ</h1>
+    <input type="file" id="fileInput" accept="image/*">
+    <textarea id="binaryData" placeholder="バイナリデータがここに表示されます"></textarea>
+    <button id="downloadBtn">再出力</button>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const binaryData = document.getElementById('binaryData');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const arrayBuffer = e.target.result;
+                    const bytes = new Uint8Array(arrayBuffer);
+                    const binaryString = Array.from(bytes).map(b => String.fromCharCode(b)).join('');
+                    binaryData.value = binaryString;
+                };
+                reader.readAsArrayBuffer(file);
+            }
+        });
+
+        downloadBtn.addEventListener('click', () => {
+            const binaryString = binaryData.value;
+            const byteNumbers = new Uint8Array(binaryString.length);
+            for (let i = 0; i < binaryString.length; i++) {
+                byteNumbers[i] = binaryString.charCodeAt(i);
+            }
+            const blob = new Blob([byteNumbers], { type: 'image/png' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'edited_image.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+    </script>
+</body>
+</html>
