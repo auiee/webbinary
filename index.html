@@ -35,19 +35,19 @@
                 reader.onload = (e) => {
                     const arrayBuffer = e.target.result;
                     const bytes = new Uint8Array(arrayBuffer);
-                    const binaryString = Array.from(bytes).map(b => String.fromCharCode(b)).join('');
-                    binaryData.value = binaryString;
+                    const hexString = Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join(' ');
+                    binaryData.value = hexString.toUpperCase();
                 };
                 reader.readAsArrayBuffer(file);
             }
         });
 
         downloadBtn.addEventListener('click', () => {
-            const binaryString = binaryData.value;
-            const byteNumbers = new Uint8Array(binaryString.length);
-            for (let i = 0; i < binaryString.length; i++) {
-                byteNumbers[i] = binaryString.charCodeAt(i);
-            }
+            const hexString = binaryData.value.trim().split(' ');
+            const byteNumbers = new Uint8Array(hexString.length);
+            hexString.forEach((hex, i) => {
+                byteNumbers[i] = parseInt(hex, 16);
+            });
             const blob = new Blob([byteNumbers], { type: 'image/png' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
